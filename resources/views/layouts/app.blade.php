@@ -364,12 +364,6 @@
                     <li class="nav-item">
                         <a href="/gallery" class="nav-link">Gallery</a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/about" class="nav-link">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/contact" class="nav-link">Contact</a>
-                    </li>
                 </ul>
 
                 <div class="nav-actions" id="navActions">

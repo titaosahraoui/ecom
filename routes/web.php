@@ -15,10 +15,6 @@ use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Route::get('/shop', function () {
-//     // You can return a shop view or redirect to products
-//     return redirect()->route('products.index');
-// })->name('shop');
 Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery.index');
 Route::get('/gallery/{gallery}', [GalleryController::class, 'show'])->name('gallery.show');
 Route::view('/about', 'about')->name('about');
@@ -92,6 +88,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
         Route::get('/users', [AdminController::class, 'indexUsers'])->name('admin.users.index');
         Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('admin.users.destroy');
+
 
 
         Route::get('/products/pending', [AdminController::class, 'pendingProducts'])->name('admin.pending');

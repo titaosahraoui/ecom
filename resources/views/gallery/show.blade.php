@@ -26,18 +26,22 @@
     </div>
 
     <div class="gallery-detail-content">
-        <div class="gallery-detail-image-container">
-            <img
-                src="{{ asset('storage/' . $gallery->image) }}"
-                alt="{{ $gallery->title }}"
-                class="gallery-detail-image"
-            />
+        <div class="gallery-images-slider">
+            @foreach ($gallery->images as $image)
+            <div class="gallery-image-item">
+                <img
+                    src="{{ asset('storage/' . $image->image_path) }}"
+                    alt="{{ $gallery->title }} - Image {{ $loop->iteration }}"
+                    class="gallery-detail-image"
+                />
+            </div>
+            @endforeach
         </div>
 
         <div class="gallery-detail-info">
             <h1 class="gallery-detail-title">{{ $gallery->title }}</h1>
             <p class="gallery-detail-author">
-                Posted by {{ $gallery->user->name }}
+                By {{ $gallery->user?->name ?? 'Unknown Author' }}
             </p>
             <p class="gallery-detail-date">
                 {{ $gallery->created_at->format('F j, Y') }}
@@ -50,6 +54,98 @@
 </div>
 
 <style>
+    /* Gallery Slider Styles */
+    .gallery-images-slider {
+        position: relative;
+        max-width: 100%;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .gallery-slider-track {
+        display: flex;
+        transition: transform 0.5s ease;
+        height: 500px; /* Adjust based on your needs */
+    }
+
+    .gallery-image-item {
+        min-width: 100%;
+        position: relative;
+    }
+
+    .gallery-detail-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: #f5f5f5;
+    }
+
+    /* Navigation Buttons */
+    .slider-nav {
+        position: absolute;
+        top: 50%;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+
+    .slider-nav button {
+        background: rgba(255, 255, 255, 0.7);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        color: #333;
+        transition: all 0.3s ease;
+        margin: 0 15px;
+    }
+
+    .slider-nav button:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Dots Indicator */
+    .slider-dots {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .slider-dots .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    .slider-dots .dot.active {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .gallery-slider-track {
+            height: 300px;
+        }
+
+        .slider-nav button {
+            width: 30px;
+            height: 30px;
+            margin: 0 5px;
+        }
+    }
     .gallery-detail-container {
         max-width: 1200px;
         margin: 2rem auto;
@@ -164,16 +260,84 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (@json($previous) && e.key === 'ArrowLeft') {
-                window.location.href = "{{ route('gallery.show', $previous) }}";
-            }
+    document.addEventListener("DOMContentLoaded", function () {
+        const slider = document.querySelector(".gallery-images-slider");
+        const track = document.createElement("div");
+        track.className = "gallery-slider-track";
 
-            if (@json($next) && e.key === 'ArrowRight') {
-                window.location.href = "{{ route('gallery.show', $next) }}";
-            }
+        // Wrap all images in the track
+        const items = document.querySelectorAll(".gallery-image-item");
+        items.forEach((item) => track.appendChild(item));
+        slider.prepend(track);
+
+        // Create navigation
+        const navHTML = `
+            <div class="slider-nav">
+                <button class="prev-slide">&lt;</button>
+                <button class="next-slide">&gt;</button>
+            </div>
+            <div class="slider-dots"></div>
+        `;
+        slider.insertAdjacentHTML("beforeend", navHTML);
+
+        // Slider functionality
+        let currentIndex = 0;
+        const itemCount = items.length;
+        const dotsContainer = document.querySelector(".slider-dots");
+
+        // Create dots
+        for (let i = 0; i < itemCount; i++) {
+            const dot = document.createElement("div");
+            dot.className = "dot" + (i === 0 ? " active" : "");
+            dot.dataset.index = i;
+            dotsContainer.appendChild(dot);
+        }
+
+        // Update slider position
+        function updateSlider() {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+            // Update dots
+            document.querySelectorAll(".dot").forEach((dot, index) => {
+                dot.classList.toggle("active", index === currentIndex);
+            });
+        }
+
+        // Navigation events
+        document.querySelector(".prev-slide").addEventListener("click", () => {
+            currentIndex = currentIndex > 0 ? currentIndex - 1 : itemCount - 1;
+            updateSlider();
+        });
+
+        document.querySelector(".next-slide").addEventListener("click", () => {
+            currentIndex = currentIndex < itemCount - 1 ? currentIndex + 1 : 0;
+            updateSlider();
+        });
+
+        // Dot click events
+        document.querySelectorAll(".dot").forEach((dot) => {
+            dot.addEventListener("click", () => {
+                currentIndex = parseInt(dot.dataset.index);
+                updateSlider();
+            });
+        });
+
+        // Auto-slide (optional)
+        let slideInterval = setInterval(() => {
+            currentIndex = currentIndex < itemCount - 1 ? currentIndex + 1 : 0;
+            updateSlider();
+        }, 5000);
+
+        // Pause on hover
+        slider.addEventListener("mouseenter", () =>
+            clearInterval(slideInterval)
+        );
+        slider.addEventListener("mouseleave", () => {
+            slideInterval = setInterval(() => {
+                currentIndex =
+                    currentIndex < itemCount - 1 ? currentIndex + 1 : 0;
+                updateSlider();
+            }, 5000);
         });
     });
 </script>
