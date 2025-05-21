@@ -71,6 +71,11 @@
 
 
 
+
+
+
+
+
             }})
         </h2>
         <div class="gallery-grid">
@@ -110,18 +115,6 @@
                                 <i class="fas fa-times"></i>
                             </button>
                         </form>
-                        @if($gallery->exists)
-                        <a
-                            href="{{ route('gallery.show', $gallery) }}"
-                            class="gallery-card"
-                        >
-                            <!-- Content -->
-                        </a>
-                        @else
-                        <div class="alert alert-warning">
-                            Gallery ID missing for {{ $gallery->title }}
-                        </div>
-                        @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -146,7 +139,7 @@
     <!-- Approved Galleries Section -->
     <div class="approved-galleries">
         <h2>
-            <i class="fas fa-check-circle"></i> Approved Galleries ({{ $galleries->total()
+            <i class="fas fa-check-circle"></i> Galleries ({{ $galleries->total()
 
 
 
@@ -156,7 +149,7 @@
         <div class="gallery-grid">
             @foreach($galleries as $gallery)
             <a
-                href="{{ route('gallery.show', $gallery) }}"
+                href="{{ route('gallery.show', $gallery->id) }}"
                 class="gallery-card"
             >
                 <div class="gallery-image-container">
@@ -176,7 +169,8 @@
                     <p>{{ Str::limit($gallery->description, 100) }}</p>
                     <div class="card-footer">
                         <span class="author"
-                            >By {{ $gallery->user->name }}</span
+                            >By
+                            {{ $gallery->user?->name ?? 'Unknown Author' }}</span
                         >
                         <span
                             class="date"

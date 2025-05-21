@@ -55,7 +55,7 @@ class GalleryController extends Controller
                 'user_id' => Auth::id(),
                 'title' => $request->title,
                 'description' => $request->description,
-                'approved' => Auth::user()->can('approve', Gallery::class), // Auto-approve if admin
+                'approved' => auth()->user()->can('approve', Gallery::class), // Auto-approve if admin
             ]);
 
             // Process each uploaded image
@@ -72,9 +72,7 @@ class GalleryController extends Controller
             DB::commit();
 
             return redirect()->route('gallery.index')
-                ->with('success', Auth::user()->can('approve', Gallery::class)
-                    ? 'Gallery created successfully!'
-                    : 'Gallery submitted for approval');
+                ->with('success', 'Gallery created successfully and submitted for approval');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()
@@ -88,16 +86,21 @@ class GalleryController extends Controller
             abort(404);
         }
 
+        // Get previous and next galleries safely
+        $previous = Gallery::where('approved', true)
+            ->where('id', '<', $gallery->id)
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $next = Gallery::where('approved', true)
+            ->where('id', '>', $gallery->id)
+            ->orderBy('id', 'asc')
+            ->first();
+
         return view('gallery.show', [
             'gallery' => $gallery->load('images'),
-            'previous' => Gallery::where('id', '<', $gallery->id)
-                ->where('approved', true)
-                ->orderBy('id', 'desc')
-                ->first(),
-            'next' => Gallery::where('id', '>', $gallery->id)
-                ->where('approved', true)
-                ->orderBy('id', 'asc')
-                ->first()
+            'previous' => $previous,
+            'next' => $next
         ]);
     }
 

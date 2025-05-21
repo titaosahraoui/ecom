@@ -127,7 +127,12 @@
                             </span>
                         </td>
                         <td>
-                            <button class="action-btn view-btn">View</button>
+                            <a
+                                href="{{ route('orders.show', $order) }}"
+                                class="action-btn view-btn"
+                            >
+                                View
+                            </a>
                         </td>
                     </tr>
                     @endforeach
@@ -177,6 +182,11 @@
                 <div class="list-item" id="user-{{ $user->id }}">
                     <div class="user-avatar">
                         {{ strtoupper(substr($user->prenom, 0, 1))
+
+
+
+
+
 
 
 
